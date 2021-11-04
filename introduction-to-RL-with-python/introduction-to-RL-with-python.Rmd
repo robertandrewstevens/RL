@@ -184,7 +184,7 @@ The multi-armed bandit is one of the most popular problems in RL:
 
 You can think of it in analogy to a slot machine (a one-armed bandit). Each action selection is like a play of one of the slot machine’s levers, and the rewards are the payoffs for hitting the jackpot.
 
-![Bandit machine](introduction-to-reinforcement-learning-with-python-2.jpg){width=100%}
+![Bandit machine](introduction-to-reinforcement-learning-with-python-2.jpg){width=50%}
 
 Solving this problem means that we can come come up with an optimal policy: a strategy that allows us to select the best possible action (the one with the highest expected return) at each time step.
 

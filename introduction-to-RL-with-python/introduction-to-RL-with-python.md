@@ -258,7 +258,7 @@ Each action selection is like a play of one of the slot machine’s
 levers, and the rewards are the payoffs for hitting the jackpot.
 
 <figure>
-<img src="introduction-to-reinforcement-learning-with-python-2.jpg" style="width:100.0%" alt="Bandit machine" /><figcaption aria-hidden="true">Bandit machine</figcaption>
+<img src="introduction-to-reinforcement-learning-with-python-2.jpg" style="width:50.0%" alt="Bandit machine" /><figcaption aria-hidden="true">Bandit machine</figcaption>
 </figure>
 
 Solving this problem means that we can come come up with an optimal
@@ -364,7 +364,7 @@ the jackpots for our bandits:
 print(Q)
 ```
 
-    [0.43455497382198954, 0.46483180428134546, 0.7994833710041971]
+    [0.40625000000000006, 0.4080459770114941, 0.8045161290322578]
 
 This means that our greedy policy will correctly favor actions from
 which we can expect higher rewards.
