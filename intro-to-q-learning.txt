@@ -49,7 +49,7 @@ We can continue this until we reach some convergence criteria. In this super sim
 The full Q-learning algorithm is as follows:
 
 ```
-SET ALGORITHM PARAMTERS α, ϵ ∈ (0, 1], AND INITIALIZE Q(s, a) ARBITRARILY (EXCEPT FOR TERMINAL STATES WHICH ARE SET TO 0). 
+SET ALGORITHM PARAMTERS α, ϵ ∈ (0, 1], AND INITIALIZE Q(s, a) ARBITRARILY (EXCEPT FOR TERMINAL STATES WHICH ARE SET TO 0)
 
 FOR EACH EPISODE:
 
