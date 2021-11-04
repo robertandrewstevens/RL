@@ -364,7 +364,7 @@ the jackpots for our bandits:
 print(Q)
 ```
 
-    [0.43558282208588955, 0.377717391304348, 0.8044272512357631]
+    [0.42234332425068105, 0.3742690058479532, 0.800344419330532]
 
 This means that our greedy policy will correctly favor actions from
 which we can expect higher rewards.

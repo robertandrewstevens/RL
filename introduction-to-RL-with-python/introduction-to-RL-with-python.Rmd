@@ -7,7 +7,8 @@ output: github_document
 
 ```{r, echo=FALSE}
 knitr::opts_chunk$set(
-  comment=NA,
+  echo = TRUE,
+  comment = NA,
   engine.path = list(python = '/usr/local/bin/python3')
 )
 ```
