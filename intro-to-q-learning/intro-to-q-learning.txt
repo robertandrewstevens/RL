@@ -1,0 +1,200 @@
+https://www.datahubbs.com/intro-to-q-learning/
+
+# Intro to Q-Learning
+
+## Q-Learning
+
+Q-Learning was first introduced in [1989 by Christopher Watkins](http://www.cs.rhul.ac.uk/~chrisw/new_thesis.pdf) as a growth out of the [dynamic programming](https://www.datahubbs.com/what-is-dynamic-programming/) paradigm. Q-learning also served as the basis for some of the tremendous achievements of deep reinforcement learning that came out of [Google DeepMind in 2013](https://arxiv.org/pdf/1312.5602v1.pdf) and helped put these techniques on the map. But before we get to learning how to play Atari games, let’s first focus on building up from the basics by focusing on **tabular Q-learning**.
+
+## A Simple Example
+
+Reinforcement learning relies on [Markov Decision Processes (MDPs)](https://www.datahubbs.com/reinforcement-learning-markov-decision-processes/), which consist of states (s_t) that an agent is in and actions (a_t) that the agent can take to move onto a new state (s_t+1) and receive a reward or a punishment (R_t+1). Q-learning seeks to learn the corresponding Q-value (think “quality”) of a given action-state pair. When the number of states and actions are both small and well-defined, we can represent these states and actions in a table.
+
+Let’s imagine a simple grid world with two actions, left and right, and four grid spaces with the goal (G) at the far side. If the agent reaches the goal it gets a reward of +1 and the episode ends.
+
+q_learning_2d-2.png
+
+Such a small environment is trivial to solve, but it allows for easy visualization of a Q-table.
+
+q_learning_table-1.png
+
+The Q-values here are understood as the expected discounted reward the agent will receive if it takes an action (left or right in this case) in a given state (1, 2, 3, or 4). To calculate the Q-values, we use the Q-learning update equation.
+
+Q(s_t, a_t) ← Q(s_t, a_t) + α(R_t+1 + γ max_a[Q(s_t+1, a)] – Q(s_t, a_t))
+ 
+So how does this work? Starting from inside the parentheses, we take the reward we got from our selected action (R_t+1), and add it to the discounted maximum Q-value for that state, and subtract it from our current estimate of the Q-value of that state. What this is doing is computing the **error** between the action we just took and what we believe to be the best action available to us from this new state (S_t+1). We then scale the error down by our step-size (α) and add it to our current estimate for Q(s_t, a_t), which then yields our new estimate for Q(s_t, a_t).
+
+This makes sense because Q(s_t, a_t) is an approximation of the total discounted future rewards from that state when taking that action. This means that when we take that action and get the reward, the reward plus our approximation should be equal to the discounted sum of all future rewards if we’re following a greedy policy. In other words we want to learn a function so that:
+
+Q(s_t, a_t) ≈ R_t+1 + γ max_a[Q(s_t+1, a_t+1)]
+
+If we initialize all the values in our Q-table to 0, choose γ = 1 and α = 0.1, we can see how this might work. Say the agent is in position 1 and moves right. In this case, our new Q-value, Q(1, R) , will remain 0 because we get no reward from  1 → 2 and we have no non-zero values in our Q-table. Same thing if we move right again from 2 → 3. If we move 3 → 4, we get a reward, so we can update our table. Now, we have:
+
+0 + 0.1(1 + 0 – 0) ⇒ Q(3, R) = 0.1
+ 
+This value will begin to propogate through the table with each episode, giving our agent something to learn on! Because position 4 is a terminal state, we can go back to the beginning and do it over again. But now, our Q-table looks like this:
+
+q_learning_table_update1.png
+
+Running through the same procedure again, we’ll have Q(1,R) = 0, but now we’ll get a value for  Q(2, R):
+
+Q(2, R) = 0 + 0.1(0 + max_a[Q(3)] – 0)
+ 
+From our table, we can see that max_a[Q(3)] = 0.1, thus we have:
+
+⇒ Q(2, R) = 0.01
+
+We can continue this until we reach some convergence criteria. In this super simple environment, we can determine the optimal policy by inspection (always go right). For actual training environments, we need some type of action selection rule. Typically, ϵ−greedy  policies are chosen, which means that we look at our Q-table and choose the action corresponding to the largest value for that state (max_a[Q(s_t)]), that’s the greedy part. But we have some probability ϵ (often times 0.05) that we choose a random action to ensure that we’re exploring the environment sufficiently.
+
+The full Q-learning algorithm is as follows:
+
+```
+SET ALGORITHM PARAMTERS α, ϵ ∈ (0, 1], AND INITIALIZE Q(s, a) ARBITRARILY (EXCEPT FOR TERMINAL STATES WHICH ARE SET TO 0)
+
+FOR EACH EPISODE:
+
+    INITIALIZE ENVIRONMENT
+    FOR EACH STEP IN THE EPISODE:
+
+        DRAW A RANDOM NUMBER p FROM A UNIFORM DISTRIBUTION ∈ [0, 1] 
+
+            IF p < ϵ → CHOOSE RANDOM ACTION a_t
+
+            ELSE SELECT max_a[Q(s_t)] FROM Q-TABLE
+
+        TAKE ACTION a_t AND OBSERVE R_t+1, s_t+1 
+
+        UPDATE Q-TABLE: Q(s_t, a_t) ← Q(s_t, a_t) + α(R_t+1 + γ max_a[Q(s_t+1, a)] – Q(s_t, a_t)) 
+
+    UNTIL MAX NUMBER OF EPISODES REACHED OR CONVERGENCE CRITERIA SATISFIED
+```
+
+Let’s see how this works with another, simple grid world example.
+
+## Grid World
+
+If you haven’t already, you can get the code for this grid world from [here on GitHub](https://github.com/hubbs5/rl_blog/blob/master/q_learning/tabular/gridworld.py). From there you can import the following packages and you’ll be off and running.
+
+```
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline 
+
+from gridworld import * # Get this from GitHub!
+np.random.seed(1234)
+plt.rcParams.update({'font.size': 18})
+```
+
+The grid world is 3×5 environment with two terminal states, a trap (T) and a goal (G). You get a reward of −5 for the trap and +10 for the goal. You can visualize the grid world with the following commands:
+
+```
+env = gridworld()
+env.show_grid()
+```
+
+```
+--------------------------
+| S  |    |    |    | T  |  
+--------------------------
+|    |    |    |    |    |  
+--------------------------
+|    |    |    |    | G  |  
+--------------------------
+```
+
+To start off, let’s initialize our Q-table to be all zeros. Notice that the Q-table will have one more dimension than the grid world. In the simple, 1-D example above, we had a 2-D Q-table. In this 2-D grid world, we’ll have a 3-D table. For this, I set it up so that the rows and columns of the Q-table correspond to the rows and columns of the grid world and the depth corresponds to the actions. In this case, we have four actions (up, down, left, and right), so we’ll have a 3×5×4  table.
+
+```
+q_table = np.zeros((env.dim[0], env.dim[1], len(env.action_space)))
+q_table.shape  # (3, 5, 4)
+```
+
+Using a Q-table, we can easily access the entries by using the states and actions as indices.
+
+Now, let’s set up our parameters and implement the algorithm. Set the number of episodes to 1,000,  γ = 0.99, ϵ = 0.05, and α = 0.01.
+
+```
+# Parameters
+num_episodes = 1000
+gamma = 0.99
+eps = 0.05
+lr = 0.01
+```
+
+The implementd algorithm below maps to the description above and should be straightforward to understand.
+
+```
+# Empty lists to track the number of rewards
+ep_rewards = []
+n_steps = []
+
+# Zero out the Q-table
+q_table = np.zeros((env.dim[0], env.dim[1], len(env.action_space)))
+
+# Loop through the algorithm
+for ep in range(num_episodes):
+    s_0 = env.reset()
+    done = False
+    rewards = 0
+    while done == False:
+        # Take random action with epsilon probability
+        if np.random.rand() < eps:
+            action = np.random.choice(env.action_space)
+        else:
+            # Take greedy action
+            action = np.argmax(q_table[s_0[0], s_0[1]])
+
+        s_1, reward, done = env.step(action)
+        
+        # Update the Q-table
+        q_table[s_0[0], s_0[1], action] += lr*(reward + gamma*np.max(q_table[s_1[0], s_1[1]]) - q_table[s_0[0], s_0[1], action])
+        s_0 = s_1.copy()
+        rewards += reward
+        if done:
+            ep_rewards.append(rewards)
+            
+# Calculate rolling average
+mean_rewards = [np.mean(ep_rewards[n-10:n]) if n > 10 else np.mean(ep_rewards[:n]) for n in range(1, len(ep_rewards))]
+
+# Plot results
+plt.figure(figsize=(12,8))
+plt.plot(ep_rewards)
+plt.plot(mean_rewards)
+plt.title('Gridworld Rewards')
+plt.xlabel('Episode')
+plt.ylabel('Reward')
+plt.show()
+```
+
+gridworld_rewards.png
+
+We can see that the algorithm quickly learns a good policy enabling it to solve the environment.
+
+Additionally, we can see how it values each of the state-action pairs by plotting the values of the Q-table for each action as a heatmap.
+
+```
+plt.figure(figsize=(12,8))
+for a_idx in env.action_space:
+    plt.subplot(2,2,a_idx + 1)
+    sns.heatmap(q_table[:,:, a_idx], cmap='hot', 
+                vmin=np.min(q_table), vmax=np.max(q_table))
+    # Get direction name from dictionary
+    direction = [i for i in env.action_dict if env.action_dict[i] == a_idx]
+    plt.title('Q-Values for Moving {}'.format(direction[0]))
+
+plt.tight_layout()
+plt.show()
+```
+
+As expected, moving down and to the right are the best options available to us.
+
+Finally, I created a `plot_policy` method in the `gridworld` environment you can call to view the policy given by your current Q-table. This helps to synthesize the various views and see what the algorithm recommends we do.
+
+```
+env.plot_policy(q_table)
+```
+
+The algorithm will converge to the optimal policy,  q∗, in the limit and can quickly approximate large and complex environments. Get a feel for it by implementing the algorithm to solve some of the tabular [OpenAI Gym environments](https://gym.openai.com/envs/#toy_text). Some of these are stochastic in nature (e.g. the Frozen Lake environments) and can still successfully be solved with a tabular Q-learning approach.
+
+Q-learning is a powerful learning algorithm that has accomplished a lot in the RL world. This tabular method is rather straightforward and easy to understand, making it a key stepping stone to grasping the nuances of Deep Q-Learning and more advanced methods.
