@@ -1,0 +1,327 @@
+(base) tdird@tdird-LC-F4572:~$ ls
+anaconda3                     MerlinFluidSim.slxc
+anaconda_install.txt          microsoft-edge_startup.txt
+boost_1_67_0                  Music
+Desktop                       Pictures
+Documents                     Public
+Downloads                     PycharmProjects
+examples.desktop              python_dds_wrapper
+Failure_Prediction_Model.txt  python_dds_wrapper.txt
+git_commands.txt              slprj
+MATLAB                        snap
+matlab_install.txt            Templates
+matlab_startup.txt            tetanus
+merlin                        Videos
+(base) tdird@tdird-LC-F4572:~$ cd tetanus
+(base) tdird@tdird-LC-F4572:~/tetanus$ ls
+bitbucket-pipelines.yml  README.md  setup.py  tetanus
+(base) tdird@tdird-LC-F4572:~/tetanus$ cd tetanus
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus$ ls
+agents  common  config  devices  __init__.py  util
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus$ cd agents
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus/agents$ ls
+anchor        compartment      __init__.py  onboard_control       structures
+annunciators  electrical       lighting     propulsion            tamper
+ballast       foss             loss         propulsion_tester.py  UVPlatform
+base.py       health_monitor   lpa          rpm_tester.py
+bilge         health_reporter  main.py      speed_tester.py
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus/agents$ cd electrical
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus/agents/electrical$ ls
+electrical.py  generator_optimization  __init__.py
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus/agents/electrical$ cd generator_optimization/
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus/agents/electrical/generator_optimization$ ls
+Generator-Optimization-Results.html   gym-powerplant
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus/agents/electrical/generator_optimization/gym-powerplant$ pip install -e .
+Obtaining file:///home/tdird/tetanus/tetanus/agents/electrical/generator_optimization/gym-powerplant
+Requirement already satisfied: gym in /home/tdird/anaconda3/lib/python3.8/site-packages (from gym-powerplant==0.0.1) (0.17.3)
+Requirement already satisfied: scipy in /home/tdird/anaconda3/lib/python3.8/site-packages (from gym->gym-powerplant==0.0.1) (1.5.2)
+Requirement already satisfied: numpy>=1.10.4 in /home/tdird/anaconda3/lib/python3.8/site-packages (from gym->gym-powerplant==0.0.1) (1.19.2)
+Requirement already satisfied: pyglet<=1.5.0,>=1.4.0 in /home/tdird/anaconda3/lib/python3.8/site-packages (from gym->gym-powerplant==0.0.1) (1.5.0)
+Requirement already satisfied: cloudpickle<1.7.0,>=1.2.0 in /home/tdird/anaconda3/lib/python3.8/site-packages (from gym->gym-powerplant==0.0.1) (1.6.0)
+Requirement already satisfied: future in /home/tdird/anaconda3/lib/python3.8/site-packages (from pyglet<=1.5.0,>=1.4.0->gym->gym-powerplant==0.0.1) (0.18.2)
+Installing collected packages: gym-powerplant
+  Attempting uninstall: gym-powerplant
+    Found existing installation: gym-powerplant 0.0.1
+    Can't uninstall 'gym-powerplant'. No files were found to uninstall.
+  Running setup.py develop for gym-powerplant
+Successfully installed gym-powerplant
+
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus/agents/electrical/generator_optimization/gym-powerplant$ python -v
+import _frozen_importlib # frozen
+import _imp # builtin
+import '_thread' # <class '_frozen_importlib.BuiltinImporter'>
+import '_warnings' # <class '_frozen_importlib.BuiltinImporter'>
+import '_weakref' # <class '_frozen_importlib.BuiltinImporter'>
+import '_frozen_importlib_external' # <class '_frozen_importlib.FrozenImporter'>
+import '_io' # <class '_frozen_importlib.BuiltinImporter'>
+import 'marshal' # <class '_frozen_importlib.BuiltinImporter'>
+import 'posix' # <class '_frozen_importlib.BuiltinImporter'>
+import _thread # previously loaded ('_thread')
+import '_thread' # <class '_frozen_importlib.BuiltinImporter'>
+import _weakref # previously loaded ('_weakref')
+import '_weakref' # <class '_frozen_importlib.BuiltinImporter'>
+# installing zipimport hook
+import 'time' # <class '_frozen_importlib.BuiltinImporter'>
+import 'zipimport' # <class '_frozen_importlib.FrozenImporter'>
+# installed zipimport hook
+# /home/tdird/anaconda3/lib/python3.8/encodings/__pycache__/__init__.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/encodings/__init__.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/encodings/__pycache__/__init__.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/codecs.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/codecs.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/codecs.cpython-38.pyc'
+import '_codecs' # <class '_frozen_importlib.BuiltinImporter'>
+import 'codecs' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b4681a880>
+# /home/tdird/anaconda3/lib/python3.8/encodings/__pycache__/aliases.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/encodings/aliases.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/encodings/__pycache__/aliases.cpython-38.pyc'
+import 'encodings.aliases' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b467b3e50>
+import 'encodings' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b4681a670>
+# /home/tdird/anaconda3/lib/python3.8/encodings/__pycache__/utf_8.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/encodings/utf_8.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/encodings/__pycache__/utf_8.cpython-38.pyc'
+import 'encodings.utf_8' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b4681aac0>
+import '_signal' # <class '_frozen_importlib.BuiltinImporter'>
+# /home/tdird/anaconda3/lib/python3.8/encodings/__pycache__/latin_1.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/encodings/latin_1.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/encodings/__pycache__/latin_1.cpython-38.pyc'
+import 'encodings.latin_1' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b467b3f40>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/io.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/io.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/io.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/abc.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/abc.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/abc.cpython-38.pyc'
+import '_abc' # <class '_frozen_importlib.BuiltinImporter'>
+import 'abc' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b467cc430>
+import 'io' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b467cc160>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/site.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/site.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/site.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/os.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/os.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/os.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/stat.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/stat.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/stat.cpython-38.pyc'
+import '_stat' # <class '_frozen_importlib.BuiltinImporter'>
+import 'stat' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b4676ad60>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/_collections_abc.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/_collections_abc.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/_collections_abc.cpython-38.pyc'
+import '_collections_abc' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b4676adf0>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/posixpath.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/posixpath.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/posixpath.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/genericpath.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/genericpath.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/genericpath.cpython-38.pyc'
+import 'genericpath' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b4679f730>
+import 'posixpath' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b46774730>
+import 'os' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b467dd4c0>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/_sitebuiltins.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/_sitebuiltins.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/_sitebuiltins.cpython-38.pyc'
+import '_sitebuiltins' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b467ddd60>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/_bootlocale.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/_bootlocale.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/_bootlocale.cpython-38.pyc'
+import '_locale' # <class '_frozen_importlib.BuiltinImporter'>
+import '_bootlocale' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b4679fb50>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/types.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/types.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/types.cpython-38.pyc'
+import 'types' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b4679fe20>
+# /home/tdird/anaconda3/lib/python3.8/importlib/__pycache__/__init__.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/importlib/__init__.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/importlib/__pycache__/__init__.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/warnings.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/warnings.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/warnings.cpython-38.pyc'
+import 'warnings' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b467179d0>
+import 'importlib' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b46717670>
+# /home/tdird/anaconda3/lib/python3.8/importlib/__pycache__/util.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/importlib/util.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/importlib/__pycache__/util.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/importlib/__pycache__/abc.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/importlib/abc.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/importlib/__pycache__/abc.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/importlib/__pycache__/machinery.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/importlib/machinery.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/importlib/__pycache__/machinery.cpython-38.pyc'
+import 'importlib.machinery' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b46733250>
+import 'importlib.abc' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b46729550>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/contextlib.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/contextlib.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/contextlib.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/collections/__pycache__/__init__.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/collections/__init__.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/collections/__pycache__/__init__.cpython-38.pyc'
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/operator.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/operator.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/operator.cpython-38.pyc'
+import '_operator' # <class '_frozen_importlib.BuiltinImporter'>
+import 'operator' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b44ceb760>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/keyword.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/keyword.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/keyword.cpython-38.pyc'
+import 'keyword' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b44ceb850>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/heapq.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/heapq.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/heapq.cpython-38.pyc'
+# extension module '_heapq' loaded from '/home/tdird/anaconda3/lib/python3.8/lib-dynload/_heapq.cpython-38-x86_64-linux-gnu.so'
+# extension module '_heapq' executed from '/home/tdird/anaconda3/lib/python3.8/lib-dynload/_heapq.cpython-38-x86_64-linux-gnu.so'
+import '_heapq' # <_frozen_importlib_external.ExtensionFileLoader object at 0x7f4b44cf01c0>
+import 'heapq' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b44ceb9d0>
+import 'itertools' # <class '_frozen_importlib.BuiltinImporter'>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/reprlib.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/reprlib.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/reprlib.cpython-38.pyc'
+import 'reprlib' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b44cebd60>
+import '_collections' # <class '_frozen_importlib.BuiltinImporter'>
+import 'collections' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b44cce940>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/functools.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/functools.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/functools.cpython-38.pyc'
+import '_functools' # <class '_frozen_importlib.BuiltinImporter'>
+import 'functools' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b44cceaf0>
+import 'contextlib' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b46729c10>
+import 'importlib.util' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b46717820>
+# possible namespace for /home/tdird/anaconda3/lib/python3.8/site-packages/mpl_toolkits
+# destroy sphinxcontrib
+# destroy sphinxcontrib
+# destroy sphinxcontrib
+# destroy sphinxcontrib
+# destroy sphinxcontrib
+# destroy sphinxcontrib
+# destroy zope
+import 'site' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b467ccd90>
+Python 3.8.5 (default, Sep  4 2020, 07:30:14) 
+[GCC 7.3.0] :: Anaconda, Inc. on linux
+Type "help", "copyright", "credits" or "license" for more information.
+# extension module 'readline' loaded from '/home/tdird/anaconda3/lib/python3.8/lib-dynload/readline.cpython-38-x86_64-linux-gnu.so'
+# extension module 'readline' executed from '/home/tdird/anaconda3/lib/python3.8/lib-dynload/readline.cpython-38-x86_64-linux-gnu.so'
+import 'readline' # <_frozen_importlib_external.ExtensionFileLoader object at 0x7f4b44cceb50>
+import 'atexit' # <class '_frozen_importlib.BuiltinImporter'>
+# /home/tdird/anaconda3/lib/python3.8/__pycache__/rlcompleter.cpython-38.pyc matches /home/tdird/anaconda3/lib/python3.8/rlcompleter.py
+# code object from '/home/tdird/anaconda3/lib/python3.8/__pycache__/rlcompleter.cpython-38.pyc'
+import 'rlcompleter' # <_frozen_importlib_external.SourceFileLoader object at 0x7f4b44cf0520>
+>>> quit()
+# clear builtins._
+# clear sys.path
+# clear sys.argv
+# clear sys.ps1
+# clear sys.ps2
+# clear sys.last_type
+# clear sys.last_value
+# clear sys.last_traceback
+# clear sys.path_hooks
+# clear sys.path_importer_cache
+# clear sys.meta_path
+# clear sys.__interactivehook__
+# restore sys.stdin
+# restore sys.stdout
+# restore sys.stderr
+# cleanup[2] removing sys
+# cleanup[2] removing builtins
+# cleanup[2] removing _frozen_importlib
+# cleanup[2] removing _imp
+# cleanup[2] removing _warnings
+# cleanup[2] removing _frozen_importlib_external
+# cleanup[2] removing _io
+# cleanup[2] removing marshal
+# cleanup[2] removing posix
+# cleanup[2] removing _thread
+# cleanup[2] removing _weakref
+# cleanup[2] removing time
+# cleanup[2] removing zipimport
+# destroy zipimport
+# cleanup[2] removing _codecs
+# cleanup[2] removing codecs
+# cleanup[2] removing encodings.aliases
+# cleanup[2] removing encodings
+# destroy encodings
+# cleanup[2] removing encodings.utf_8
+# cleanup[2] removing _signal
+# cleanup[2] removing __main__
+# cleanup[2] removing encodings.latin_1
+# cleanup[2] removing _abc
+# cleanup[2] removing abc
+# cleanup[2] removing io
+# cleanup[2] removing _stat
+# cleanup[2] removing stat
+# cleanup[2] removing _collections_abc
+# cleanup[2] removing genericpath
+# cleanup[2] removing posixpath
+# cleanup[2] removing os.path
+# cleanup[2] removing os
+# cleanup[2] removing _sitebuiltins
+# cleanup[2] removing _locale
+# cleanup[2] removing _bootlocale
+# destroy _bootlocale
+# cleanup[2] removing types
+# cleanup[2] removing importlib._bootstrap
+# cleanup[2] removing importlib._bootstrap_external
+# cleanup[2] removing warnings
+# cleanup[2] removing importlib
+# destroy importlib
+# cleanup[2] removing importlib.machinery
+# cleanup[2] removing importlib.abc
+# cleanup[2] removing _operator
+# cleanup[2] removing operator
+# destroy operator
+# cleanup[2] removing keyword
+# destroy keyword
+# cleanup[2] removing _heapq
+# cleanup[2] removing heapq
+# cleanup[2] removing itertools
+# cleanup[2] removing reprlib
+# destroy reprlib
+# cleanup[2] removing _collections
+# cleanup[2] removing collections
+# destroy collections
+# cleanup[2] removing _functools
+# cleanup[2] removing functools
+# cleanup[2] removing contextlib
+# destroy contextlib
+# cleanup[2] removing importlib.util
+# cleanup[2] removing mpl_toolkits
+# destroy mpl_toolkits
+# cleanup[2] removing sphinxcontrib
+# destroy sphinxcontrib
+# cleanup[2] removing zope
+# destroy zope
+# cleanup[2] removing site
+# destroy site
+# cleanup[2] removing readline
+# cleanup[2] removing atexit
+# cleanup[2] removing rlcompleter
+# destroy rlcompleter
+# destroy time
+# destroy _signal
+# destroy _sitebuiltins
+# destroy io
+# destroy posixpath
+# destroy _stat
+# destroy genericpath
+# destroy os
+# destroy stat
+# destroy _locale
+# destroy importlib.util
+# destroy importlib.abc
+# destroy functools
+# destroy types
+# destroy importlib.machinery
+# destroy warnings
+# destroy abc
+# destroy _collections_abc
+# destroy heapq
+# destroy _operator
+# destroy _heapq
+# destroy itertools
+# destroy _collections
+# destroy atexit
+# destroy __main__
+# destroy readline
+# destroy _abc
+# destroy _functools
+# cleanup[3] wiping importlib._bootstrap_external
+# cleanup[3] wiping importlib._bootstrap
+# destroy _frozen_importlib_external
+# cleanup[3] wiping encodings.latin_1
+# cleanup[3] wiping encodings.utf_8
+# cleanup[3] wiping encodings.aliases
+# cleanup[3] wiping codecs
+# cleanup[3] wiping _codecs
+# cleanup[3] wiping _weakref
+# destroy _weakref
+# cleanup[3] wiping _thread
+# destroy _thread
+# cleanup[3] wiping posix
+# destroy posix
+# cleanup[3] wiping marshal
+# destroy marshal
+# cleanup[3] wiping _io
+# destroy io
+# cleanup[3] wiping _warnings
+# destroy _warnings
+# cleanup[3] wiping _imp
+# destroy _imp
+# cleanup[3] wiping _frozen_importlib
+# cleanup[3] wiping sys
+# cleanup[3] wiping builtins
+# destroy _frozen_importlib
+# clear sys.audit hooks
+(base) tdird@tdird-LC-F4572:~/tetanus/tetanus/agents/electrical/generator_optimization/gym-powerplant$ 

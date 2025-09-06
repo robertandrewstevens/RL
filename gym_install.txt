@@ -1,0 +1,19 @@
+(base) tdird@tdird-LC-F4572:~$ pip install gym
+Collecting gym
+  Downloading gym-0.17.3.tar.gz (1.6 MB)
+     |████████████████████████████████| 1.6 MB 1.7 MB/s 
+Requirement already satisfied: scipy in ./anaconda3/lib/python3.8/site-packages (from gym) (1.5.2)
+Requirement already satisfied: numpy>=1.10.4 in ./anaconda3/lib/python3.8/site-packages (from gym) (1.19.2)
+Collecting pyglet<=1.5.0,>=1.4.0
+  Downloading pyglet-1.5.0-py2.py3-none-any.whl (1.0 MB)
+     |████████████████████████████████| 1.0 MB 8.6 MB/s 
+Requirement already satisfied: cloudpickle<1.7.0,>=1.2.0 in ./anaconda3/lib/python3.8/site-packages (from gym) (1.6.0)
+Requirement already satisfied: future in ./anaconda3/lib/python3.8/site-packages (from pyglet<=1.5.0,>=1.4.0->gym) (0.18.2)
+Building wheels for collected packages: gym
+  Building wheel for gym (setup.py) ... done
+  Created wheel for gym: filename=gym-0.17.3-py3-none-any.whl size=1654652 sha256=cfefcf1a16b901a291c216440b658a63d37098bf6d82095962ab9eaf2406b8c2
+  Stored in directory: /home/tdird/.cache/pip/wheels/84/40/e7/14efb9870cfc92ac236d78cb721dce614ddec9666c8a5e0a35
+Successfully built gym
+Installing collected packages: pyglet, gym
+Successfully installed gym-0.17.3 pyglet-1.5.0
+
