@@ -1,0 +1,264 @@
+https://towardsdatascience.com/q-learning-54b841f3f9e4
+
+## Q-Learning
+
+Introduction through a simple table based implementation with learning rate, discount factor and exploration
+
+by Mahendran Venkatachalam, Oct 2, 2019
+
+Q-learning is one of the most popular Reinforcement learning algorithms and lends itself much more readily for learning through implementation of toy problems as opposed to scouting through loads of papers and articles.
+
+This is a simple introduction to the concept using a Q-learning table implementation. I will set up the context of what we are doing, establish a toy game to experiment with, define the Q-learning algorithm, provide a 101 implementation and explore the concepts — all in a hopefully short post that anyone can follow.
+
+## The Problem
+
+We need an algorithm to learn(1) a policy (2) that will tell us how to interact(3) with an environment(4) under different circumstances(5) in such a way to maximize rewards(6).
+
+(1) Learn — This implies we are not supposed to hand-code any particular strategy but the algorithm should learn by itself.
+
+(2) Policy — This is the result of the learning. Given a State of the Environment, the Policy will tell us how best to Interact with it so as to maximize the Rewards.
+
+(3) Interact — This is nothing but the “Actions” the algorithm should recommend we take under different circumstances.
+
+(4) Environment — This is the black box the algorithm interacts with. It is the game it is supposed to win. It’s the world we live in. It’s the universe and all the suns and the stars and everything else that can influence the environment and it’s reaction to the action taken.
+
+(5) Circumstances — These are the different “States” the environment can be in.
+
+(6) Rewards — This is the goal. The purpose of interacting with the environment. The purpose playing the game.
+
+If self-driving-car is the problem, then actions are how we do to drive like steering, braking etc. The reward will be to get to the destination in a safe way. The road, the lanes, other cars and people, light conditions, traffic rules, signposts and everything else is the the environment. Take a snapshot of all of this at a point in time and that’s the state of the environment.
+
+But that’s not the example we will use here in this example. We will take a much simpler one.
+
+## The Game
+
+Imagine a board with 5 rows and 5 columns — all the white cells in Figure 1. We can start in any white cell. The goal will be to travel and reach the green cell (5,5) at the bottom right corner using as little steps as possible. We can travel either Up, Down, Left or Right. We can only move one step at a time. And we cannot fall out of the board, i.e. move into the red cells, and if we do so, we die and we lose the game.
+
+1_-o6r44N6XzvWa6XqTZRVEQ.png
+
+Fig 1: The Game
+
+## Let’s strategize manually
+
+Before diving into the algorithm that can learn an effective to play this game, let’s strategize how to play manually. Given a starting position how do we decide in which direction to move? Well, we will move towards our target and not away from it.
+
+So how can we quantify this notion of “towards” and “away”? We can start with assigning a “distance” value to all the cells. The farthest cell from our final state target cell (5,5) is (1,1) — the cell that is diagonally opposite. Using the four actions we can perform (i.e. move Up, Down, Left or Right), it will take at least 8 steps to get to (5,5) from (1,1). Let’s give it a value of 8. Figure 2 provides a similar annotation of the distance from the target cell for every other cell.
+
+1_EXOp0w5jG-9atvX0UmnDzw.png
+
+Fig 2: The Game, annotated with distance
+
+But Q-learning and reinforcement learning in general is about selecting an action that gives us the maximum reward overall. And here reward is the inverse of distance — something to represent how close we are, instead of how far we are from the target. Also, going off the grid here means we have lost and so should be penalized. Figure 3 makes these adjustments and provides a revised view of rewards (and penalties) associated with each cell.
+
+1_tSFotpgBNGurajFg2FH8Cg.png
+
+Fig 3: The Game with rewards and penalties
+
+Let’s expand out what we have presented in Figure 3 into an “Actions vs States” table. This expanded “Actions vs States” representation is the Q-Learning table. This table and the values in the table is what our algorithm should derive.
+
+1_p6yPonqoDMlK1w_EJKlcAQ.png
+
+Fig 4: Q-Learning table of Actions vs States
+
+## Some nuances
+
+Now that we have some notion of reward represented, let’s look at a couple of points a bit more closely.
+
+First, the expected value of total rewards, the Q-value, is really the expected value of the total reward over all possible successive steps, starting from the current state. And what we posted above, really is just the reward based on the distance of that particular cell, i.e. “immediate reward”. We will notice later during implementation that values depicted in Figure 4 will be derived only when we ask the algorithm to explicitly ignore future rewards.
+
+It just happens to be that, in this toy example, taking the step with the biggest reward now also yields the biggest rewards overall. In other not-so-toy examples, actions with lower immediate rewards might yield the biggest rewards overall in the long term.
+
+To demonstrate this, think we are in (2,2) in our toy example and imagine there is a blockage in the middle of the board as shown in Figure 5.
+
+1_XV1aCvN2kWkTaos-E1h1yQ.png
+
+Fig 5: Actions with lower immediate rewards could still yield max overall rewards
+
+So in reality, from a given next state the current action will result in, we have to traverse through all possible trajectories of subsequent actions and states to get to the true Q value of the current action.
+
+Second, what we have in Figures 3 and 4 is not a perfect reward system. With a “maximizing rewards” goal, the algorithm might learn to traverse infinitely or for a very long time in the green cells on its way to the target cell — to accumulate many reward points as opposed to shortest path.
+
+But given the intent here is to learn the concepts using a toy problem, I am not going to bother much about this nuance for the moment, but ideally moving farther away from target should be penalized with negative rewards (for example, moving from 42 to 41 should not get “3”, a lower reward but rather a larger penalty like -1000).
+
+## The Algorithm
+
+Let’s get back to our goal of defining an algorithm to learn an “optimal policy”, i.e. something that will tell us what action to take given the current state of the game.
+
+The Q-learning table seen in Figure 4 will be initialized to 0s or some other value first, and the goal of the Q-learning algorithm will be learn the optimum values to be populated in this table such that at the end of learning, one can simply look at the table for a given state and select the action with maximum value and that should maximize the chance of winning the game.
+
+The Q-learning algorithm does this by playing the game many times and at the end of each move we make in each game, we study the reward we get and use the algorithm above to keep updating the table. Eventually we will arrive at a set of optimal values. Pasted below is a Wikipedia sourced image of the Q-learning algorithm detailing how we make these updates.
+
+1_XhycgDC-Xu4AJIpqkRM_pQ.png
+
+Fig 6: Q-Learning algorithm from Wikipedia
+
+After making a move during learning, the Q value for a given state and action is replaced the new value.
+
+The new value is a sum of two parts. The first part is (1-learning rate)*old value. This is how much of the old value we retain. A learning rate of 0 will mean nothing new will be learnt. A learning rate of 1 will mean the old value will be completely discarded.
+
+The second part is learning rate * (immediate reward for action + discounted estimate of optimal future value). The learning rate as explained above determines how much of the new learned value will be used. The learned value is the sum of immediate reward and discounted estimate of optimal future value. The discount factor determines the importance of future rewards. When set to 0, we will only consider immediate rewards and 1 will make algorithm take it in full.
+
+There is also the notion of exploration not called out in Figure 6. Perhaps during the first few tries the algorithm finds a particular action for a given state rewarding. If it keeps selecting the max reward action all the time, then it will keep performing the same action and will not try anything else and perhaps some other untried action has a better reward than this.
+We deal with this by introducing an exploration factor which will make the algorithm select a random action a predetermined % of times, as described in Figure 7 below.
+
+1__hfybaoZFwT_3lHPYVf3Fg.png
+
+Fig 7: Exploration
+
+## The Implementation
+
+This is a very simple implementation of the Q-learning algorithm seen above. After importing the relevant packages, the “Game” class represents our toy game. It has one simple “Move” function that takes “direction” as input and returns the reward for making the move and an end of game indicator, in accordance with the rewards and rules described above.
+
+```
+import numpy as np
+import pandas as pd
+import random
+
+class Game:
+    rewards = None
+    positionCol = None
+    positionRow = None
+    
+    def __init__(self, startCol=1, startRow=1):
+        self.rewards = pd.DataFrame({1:[0,1,2,3,4], 2:[1,2,3,4,5], 3:[2,3,4,5,6], 4:[3,4,5,6,7], 5:[4,5,6,7,8]}, index={1,2,3,4,5})
+        self.positionCol = startCol
+        self.positionRow = startRow
+        
+    def move(self, direction):
+        reward = 0
+        end = False
+        if direction=='Up':
+            self.positionRow -= 1    
+        elif direction=='Down':
+            self.positionRow += 1
+        elif direction=='Left':
+            self.positionCol -= 1  
+        else:
+            self.positionCol += 1
+        
+        #check if we lost
+        if self.positionRow < 1 or self.positionRow > 5 or self.positionCol < 1 or self.positionCol > 5:
+            end = True
+            reward = -1000   
+        #check if we have reached the end
+        elif self.positionCol == 5 and self.positionRow == 5:
+            end = True
+            reward = self.rewards[self.positionCol][self.positionRow]
+        else:
+            end = False
+            reward = self.rewards[self.positionCol][self.positionRow]
+        
+        #return reward and end of game indicator
+        return (reward, end)
+```
+
+Next we define and initialize the Q table, learning rate, discount factor and the exploration factor. The we have a loop to play the game a number of times. Each game is played until it ends, each move is either the max Q value action (1-exploration factor) times and a random action otherwise. After every move, except for the terminal state, we update the old Q-value as described in the algorithm.
+
+```
+#states are in columns and actions are in rows
+learning_rate=1
+discount=0
+random_explore=0.1
+qtable = pd.DataFrame(100, index=['Up', 'Down', 'Left', 'Right'], columns=[11,12,13,14,15,21,22,23,24,25,31,32,33,34,35,41,42,43,44,45,51,52,53,54,55])
+
+for i in range(1000):
+    #print ("Game # " + str(i))
+    game = Game()
+    end_of_game = False
+    while not end_of_game:
+        #get current state 
+        #state names are integers for ease of coding, it will be a two digit number with Col number and Row number in 1st and 2nd digits
+        current_state = (game.positionCol*10)+game.positionRow
+        #select the action with maximum reward
+        max_reward_action = qtable[current_state].idxmax()
+        #replace with random action to promote exploration and not get stuck in a loop
+        if random.random() < random_explore:
+            max_reward_action = qtable.index[random.randint(0,3)]
+        #play the game with that action
+        reward, end_of_game = game.move(max_reward_action)
+        #if (current_state==12):
+            #print("CS:" + str(current_state) + ", Action: " + max_reward_action + ", Reward: " + str(reward))
+        #if end of game, then if the game is over, then no need to update the q value for the action taken, but is set to the reward value observed
+        if end_of_game:
+            qtable.loc[max_reward_action,current_state] = reward
+            #print ("----End----")
+        else:
+            #if not end of game, then get the next state's max q value - this is the estimate of optimal future value
+            opimtal_future_value = qtable[(game.positionCol*10)+game.positionRow].max()
+            #mulitpy this with the discount factor
+            discounted_opimtal_future_value = discount * opimtal_future_value
+            #so the new learned value will be observed immediate reward plus discounted future value estimate
+            learned_value = reward + discounted_opimtal_future_value
+            #the new refreshed q value for the action taken is old value plus new value adjusted for learning rate
+            qtable.loc[max_reward_action,current_state] = (1 - learning_rate) * qtable[current_state][max_reward_action] + learning_rate * learned_value
+```
+
+## Results & Observations
+
+I deliberately set the learning rate to 1 and discount factor to 0. This will ensure a complete replacement of initial values after every single move, and only the immediate reward will be considered. If you recollect the first nuance discussed earlier, this setting should produce a Q-table that looks similar to what is seen in Figure 4.
+
+1_Z6QSIRJrgypyIVmj5dC88A.png
+
+Fig 8: The results
+
+On the flip side, setting the discount factor to 1, i.e. when we consider all of the optimal future value, then we start facing the problem described in the second nuance. i.e. given that we don’t really penalize movement away from the target cell, the algorithm tends to stay for longer periods within the board to accumulate more rewards resulting in really large Q-values as seen in Figure 9.
+
+1_7TH5q3yfy0mopAt18NN7YQ.png
+
+Fig 9: Results with discount factor of 1
+
+Here’s an implementation that fixes the issue by providing a reward of -1000 if we move away from the target cell
+
+```
+class Game:
+    rewards = None
+    positionCol = None
+    positionRow = None
+    
+    def __init__(self, startCol=1, startRow=1):
+        self.distance = pd.DataFrame({1:[8,7,6,5,4], 2:[7,6,5,4,3], 3:[6,5,4,3,2], 4:[5,4,3,2,1], 5:[4,3,2,1,0]}, index={1,2,3,4,5})
+        self.rewards = pd.DataFrame({1:[0,1,2,3,4], 2:[1,2,3,4,5], 3:[2,3,4,5,6], 4:[3,4,5,6,7], 5:[4,5,6,7,8]}, index={1,2,3,4,5})
+        self.positionCol = startCol
+        self.positionRow = startRow
+        
+    def move(self, direction):
+        reward = 0
+        end = False
+        distance_before = self.distance[self.positionCol][self.positionRow]
+        if direction=='Up':
+            self.positionRow -= 1    
+        elif direction=='Down':
+            self.positionRow += 1
+        elif direction=='Left':
+            self.positionCol -= 1  
+        else:
+            self.positionCol += 1
+        
+        #check if we lost
+        if self.positionRow < 1 or self.positionRow > 5 or self.positionCol < 1 or self.positionCol > 5:
+            end = True
+            reward = -1000   
+        #check if we have reached the end
+        elif self.positionCol == 5 and self.positionRow == 5:
+            end = True
+            reward = self.rewards[self.positionCol][self.positionRow]
+        else:
+            end = False
+            if distance_before < self.distance[self.positionCol][self.positionRow]:
+                reward = -1000
+            else:
+                reward = self.rewards[self.positionCol][self.positionRow]
+        
+        #return reward and end of game indicator
+        return (reward, end)
+```
+
+I also updated the exploration factor to 30% and increased the number of training games to 10K to converge better and here are the results in Figure 10.
+
+1_iw2l814Fr7IUnA1RSP7w_A.png
+
+Fig 10: Results with Game penalizing moving away from target
+
+While the actual values are different, we can see that the max reward actions for earlier states is same as what we noticed in Figure 8. The later states still seem to don’t exactly match the recommendations (see 51), but it is just a matter of time (or more trials) before they do. After all, Q-learning can identify an optimal policy for any finite Markov Decision Process, given infinite time and a partly-random policy!
+
+Hopefully this provides a good starting point for not just Q-learning and related concepts, but as a lot these transfer over, also to Deep Q-learning and other reinforcement learning algorithms in general.

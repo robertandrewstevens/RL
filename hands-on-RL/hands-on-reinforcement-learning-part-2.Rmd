@@ -1,0 +1,911 @@
+---
+title: "Hands-On Reinforcement Learning Course, Part 2"
+author: "Robert A. Stevens"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+https://www.kdnuggets.com/2021/12/hands-on-reinforcement-learning-part-2.html
+
+Tags: Agents, Beginners, Python, Reinforcement Learning
+
+*Continue your learning journey in Reinforcement Learning with this second of two part tutorial that covers the foundations of the technique with examples and Python code.*
+
+By Pau Labarta Bajo, mathematician and data scientist
+
+
+Venice’s taxis by Helena Jankovičová Kováčová from Pexels.
+
+This is part 2 of my hands-on course on reinforcement learning, which takes you from zero to HERO. Today we will learn about Q-learning, a classic RL algorithm born in the 90s.
+
+If you missed part 1, please read it to get the reinforcement learning jargon and basics in place.
+
+https://www.kdnuggets.com/2021/12/hands-on-reinforcement-learning-course-part-1.html
+
+Today we are solving our first learning problem…
+
+We are going to train an agent to drive a taxi!
+
+Well, a simplified version of a taxi environment, but a taxi at the end of the day.
+
+We will use Q-learning, one of the earliest and most used RL algorithms.
+
+And, of course, Python.
+
+All the code for this lesson is in this Github repo. Git clone it to follow along with today’s problem.
+
+https://github.com/Paulescu/hands-on-rl
+
+## 1. The taxi driving problem
+
+We will teach an agent to drive a taxi using Reinforcement Learning.
+
+Driving a taxi in the real world is a very complex task to start with. Because of this, we will work in a simplified environment that captures the 3 essential things a good taxi driver does, which are:
+
+- pick up passengers and drop them at their desired destination.
+
+- drive safely, meaning no crashes.
+
+- drive them in the shortest time possible
+
+We will use an environment from OpenAI Gym, called the Taxi-v3 environment.
+
+https://gym.openai.com/envs/Taxi-v3/
+
+1_toX5ZWcYxXtsaXE6hQJ1ag.png
+
+There are four designated locations in the grid world indicated by R(ed), G(reen), Y(ellow), and B(lue).
+
+When the episode starts, the taxi starts off at a random square, and the passenger is at a random location (R, G, Y, or B).
+
+The taxi drives to the passenger’s location, picks up the passenger, drives to the passenger’s destination (another one of the four specified locations), and then drops off the passenger. While doing so, our taxi driver needs to drive carefully to avoid hitting any wall, marked as |. Once the passenger is dropped off, the episode ends.
+
+This is how the q-learning agent we will build drives today:
+
+https://youtu.be/eqod3gNoVgU
+
+Before we get there, let’s understand well what are the actions, states, and rewards for this environment.
+
+## 2. Environment, actions, states, rewards
+ 
+https://github.com/Paulescu/hands-on-rl/blob/main/01_taxi/notebooks/00_environment.ipynb
+
+Let’s first load the **environment**:
+
+```
+import gym
+env = gym.make("Taxi-v3").env
+```
+
+What are the **actions** the agent can choose from at each step?
+
+- 0 drive down
+
+- 1 drive up
+
+- 2 drive right
+
+- 3 drive left
+
+- 4 pick up a passenger
+
+- 5 drop off a passenger
+
+```
+print("Action Space {}".format(env.action_space))
+# Action Space Discrete(6)
+```
+
+And the **states**?
+
+- 25 possible taxi positions because the world is a 5×5 grid
+
+- 5 possible locations of the passenger, which are R, G, Y, B, plus the case when the passenger is in the taxi
+
+- 4 destination locations
+
+which gives us 25 x 5 x 4 = 500 states.
+
+```
+print("State Space {}".format(env.observation_space))
+# State Space Discrete(500)
+```
+
+What about **rewards**?
+
+- -1 default per-step reward
+    + Why -1, and not simply 0?
+    + Because we want to encourage the agent to spend the shortest time, by penalizing each extra step
+    + This is what you expect from a taxi driver, don’t you?
+
+- +20 reward for delivering the passenger to the correct destination
+
+- -10 reward for executing a pickup or drop-off at the wrong location
+
+You can read the rewards and the environment transitions (`state`, `action`) → `next_state` from `env.P`.
+
+```
+# env.P is double dictionary.
+# - The 1st key represents the state, from 0 to 499
+# - The 2nd key represens the action taken by the agent,
+#   from 0 to 5
+
+# example
+state = 123
+action = 0  # move south
+
+# env.P[state][action][0] is a list with 4 elements
+# (probability, next_state, reward, done)
+# 
+#  - probability
+#    It is always 1 in this environment, which means
+#    there are no external/random factors that determine the
+#    next_state
+#    apart from the agent's action a.
+#
+#  - next_state: 223 in this case
+# 
+#  - reward: -1 in this case
+#
+#  - done: boolean (True/False) indicates wheter the
+#    episode has ended (i.e. the driver has dropped the
+#    passenger at the correct destination)
+print('env.P[state][action][0]: ', env.P[state][action][0])
+# env.P[state][action][0]:  (1.0, 223, -1, False)
+```
+
+By the way, you can render the environment under each state to double-check this env.P vectors make sense:
+
+From `state` = 123:
+
+```
+env.s = 123
+env.render(mode='human')
+```
+
+1_emheFKcptnVD2KrM7DrQ1g.png
+
+the agent moves south `action` = 0 to get to `state` = 223:
+
+```
+env.s = 223
+env.render(mode='human')
+```
+
+1_t9urLESKVNKcwBKqWxmmlA.png
+
+And the reward is -1, as neither the episode ended nor the driver incorrectly picked or dropped.
+
+## 3. Random agent baseline
+
+https://github.com/Paulescu/hands-on-rl/blob/main/01_taxi/notebooks/01_random_agent_baseline.ipynb
+
+Before you start implementing any complex algorithm, you should always build a baseline model.
+
+This advice applies not only to Reinforcement Learning problems but Machine Learning problems in general.
+
+It is very tempting to jump straight into the complex/fancy algorithms, but unless you are really experienced, you will fail terribly.
+
+Let’s use a random agent as a baseline model.
+
+```
+class RandomAgent:
+    """
+    This taxi driver selects actions randomly.
+    You better not get into this taxi!
+    """
+    def __init__(self, env):
+        self.env = env
+
+    def get_action(self, state) -> int:
+        """
+        We have `state` as an input to keep
+        a consistent API for all our agents, but it
+        is not used.
+        
+        i.e. The agent does not consider the state of
+        the environment when deciding what to do next.
+        This is why we call it "random".
+        """
+        return self.env.action_space.sample()
+
+agent = RandomAgent(env)
+```
+
+We can see how this agent performs for a given initial `state` = 198:
+
+```
+# set initial state of the environment
+state = 123
+env.s = state
+
+epochs = 0
+penalties = 0  # wrong pick up or dropp off
+reward = 0
+
+# store frames to latter plot them
+frames = []
+
+done = False
+
+while not done:
+    
+    action = agent.get_action(state)
+    
+    state, reward, done, info = env.step(action)
+
+    if reward == -10:
+        penalties += 1
+    
+    frames.append({
+        'frame': env.render(mode='ansi'),
+        'state': state,
+        'action': action,
+        'reward': reward
+        }
+    )
+
+    epochs += 1
+    
+    
+print("Timesteps taken: {}".format(epochs))
+print("Penalties incurred: {}".format(penalties))
+# Timesteps taken: 3804
+# Penalties incurred: 1219
+```
+
+3,804 steps is a lot!
+
+Please watch it yourself in this video:
+
+https://youtu.be/LRr7VWyGdSU
+
+To get a more representative measure of performance, we can repeat the same evaluation loop n = 100 times starting each time at a random state.
+
+```
+from tqdm import tqdm
+
+n_episodes = 100
+
+# For plotting metrics
+timesteps_per_episode = []
+penalties_per_episode = []
+
+for i in tqdm(range(0, n_episodes)):
+    
+    # reset environment to a random state
+    state = env.reset()
+
+    epochs, penalties, reward, = 0, 0, 0
+    done = False
+    
+    while not done:
+        
+        action = agent.get_action(state)       
+        next_state, reward, done, info = env.step(action) 
+               
+        if reward == -10:
+            penalties += 1
+
+        state = next_state
+        epochs += 1
+    
+    timesteps_per_episode.append(epochs)
+    penalties_per_episode.append(penalties)
+# 100%|███████████████████████████████████████████████████████████████████| 100/100 [00:06<00:00, 14.87it/s]
+```
+
+If you plot `timesteps_per_episode` and `penalties_per_episode` you can observe that none of them decreases as the agent completes more episodes. In other words, the agent is NOT LEARNING anything.
+
+1_aPZL0OuLh-1XX6RNgwVL0Q.png
+
+1_KT4vHaoewkPMm7dO-3mrRg.png
+
+If you want summary statistics of performance, you can take averages:
+
+```
+print(f'Avg steps to complete ride: {np.array(timesteps_per_episode).mean()}')
+print(f'Avg penalties to complete ride: {np.array(penalties_per_episode).mean()}')
+# Avg steps to complete ride: 2402.38
+# Avg penalties to complete ride: 777.18
+
+```
+
+Implementing agents that learn is the goal of Reinforcement Learning, and of this course too.
+
+Let’s implement our first “intelligent” agent using Q-learning, one of the earliest and most used RL algorithms that exist.
+
+## 4. Q-learning agent
+
+https://github.com/Paulescu/hands-on-rl/blob/main/01_taxi/notebooks/02_q_agent.ipynb
+
+Q-learning (by Chris Walkins and Peter Dayan) is an algorithm to find the optimal q-value function.
+
+https://www.gatsby.ucl.ac.uk/~dayan/papers/cjch.pdf
+
+http://www.cs.rhul.ac.uk/~chrisw/
+
+https://en.wikipedia.org/wiki/Peter_Dayan
+
+As we said in part 1, the q-value function $Q(s, a)$ associated with a policy $\pi$ is the total reward the agent expects to get when at state s the agent takes action a and follows policy $\pi$ thereafter.
+
+https://www.kdnuggets.com/2021/12/hands-on-reinforcement-learning-course-part-1.html
+
+The optimal q-value function $Q_*(s, a)$ is the q-value function associated with the optimal policy $\pi_*$.
+
+If you know $Q_*(s, a)$, you can infer $\pi_*$, i.e., you pick as the next action $a$ the one that maximizes $Q_*(s, a)$ for the current state $s$.
+
+Q-learning is an iterative algorithm to compute better and better approximations to the optimal q-value function $Q_*(s, a)$, starting from an arbitrary initial guess $Q_0(s, a)$.
+
+$Q_0(s, a)$ -> $Q_1(s, a)$ -> $Q_2(s, a)$ -> $Q_N(s, a)$ $\approx$ $Q_*(s, a)$
+
+In a tabular environment like "Taxi-v3" with a finite number of states and actions, a q-function is essentially a matrix. It has as many rows as states and columns as actions, i.e., 500 x 6.
+
+Ok, but how exactly do you compute the next approximation $Q_1(s, a)$ from $Q_0(s, a)$?
+
+This is the key formula in Q-learning:
+
+$Q_t(s, a) = Q_{t-1}(s, a) + \alpha (r + \gamma \max_a Q_{t-1}(s', a) - Q_{t-1}(s, a))$
+
+$\alpha$ = learning rate
+
+$r$ = reward
+
+$\gamma$ = discount factor
+
+$s'$ = next state
+
+As our q-agent navigates the environment and observes the next state s’ and reward r, you update your q-value matrix with this formula.
+
+What is the learning rate $\alpha$ in this formula?
+
+The learning rate (as usual in machine learning) is a small number that controls how large are the updates to the q-function. You need to tune it, as too large of a value will cause unstable training, and too small might not be enough to escape local minima.
+
+And this discount factor $\gamma$?
+
+The discount factor is a (hyper) parameter between 0 and 1 that determines how much our agent cares about rewards in the distant future relative to those in the immediate future.
+
+- When $\gamma$ = 0, the agent only cares about maximizing immediate reward
+    + As it happens in life, maximizing immediate reward is not the best recipe for optimal long-term outcomes
+    + This happens in RL agents too
+
+- When $\gamma$ = 1, the agent evaluates each of its actions based on the sum total of all of its future rewards. In this case, the agent weights equally immediate rewards and future rewards
+
+The discount factor is typically an intermediate value, e.g., 0.6.
+
+To sum up, if you:
+
+- train long enough
+
+- with a decent learning rate and discount factor
+
+- and the agent explores enough the state space
+
+- and you update the q-value matrix with the Q-learning formula
+
+your initial approximation will eventually converge to optimal q-matrix. Voila!
+
+Let’s implement a Python class for a Q-agent then.
+
+```
+import numpy as np
+
+class QAgent:
+
+    def __init__(self, env, alpha, gamma):
+        self.env = env
+
+        # table with q-values: n_states * n_actions
+        self.q_table = np.zeros([env.observation_space.n,
+                                 env.action_space.n])
+
+        # hyper-parameters
+        self.alpha = alpha  # learning rate
+        self.gamma = gamma  # discount factor
+
+    def get_action(self, state):
+        """"""
+        return np.argmax(self.q_table[state])
+
+    def update_parameters(self, state, action, reward, next_state):
+        """"""
+        # Q-learning formula
+        old_value = self.q_table[state, action]
+        next_max = np.max(self.q_table[next_state])
+        new_value = \
+            old_value + \
+            self.alpha * (reward + self.gamma * next_max - old_value)
+
+        # update the q_table
+        self.q_table[state, action] = new_value
+```
+
+Its API is the same as for the `RandomAgent` above, but with an extra method `update_parameters()`. This method takes the transition vector (`state`, `action`, `reward`, `next_state`) and updates the q-value matrix approximation `self.q_table` using the Q-learning formula from above.
+
+Now, we need to plug this agent into a training loop and call its `update_parameters()` method every time the agent collects a new experience.
+
+Also, remember we need to guarantee the agent explores enough the state space. Remember the exploration-exploitation parameter we talked about in part 1? This is when the epsilon parameter enters into the game.
+
+https://towardsdatascience.com/hands-on-reinforcement-learning-course-part-1-269b50e39d08
+
+Let’s train the agent for `n_episodes` = 10,000 and use `epsilon` = 10%:
+
+```
+import random
+from tqdm import tqdm
+
+# exploration vs exploitation prob
+epsilon = 0.1
+
+n_episodes = 10000
+
+# For plotting metrics
+timesteps_per_episode = []
+penalties_per_episode = []
+
+
+for i in tqdm(range(0, n_episodes)):
+    
+    state = env.reset()
+
+    epochs, penalties, reward, = 0, 0, 0
+    done = False
+    
+    while not done:
+        
+        if random.uniform(0, 1) < epsilon:
+            # Explore action space
+            action = env.action_space.sample()
+        else:
+            # Exploit learned values
+            action = agent.get_action(state)
+        
+        next_state, reward, done, info = env.step(action) 
+        
+        agent.update_parameters(state, action, reward, next_state)
+        
+        if reward == -10:
+            penalties += 1
+
+        state = next_state
+        epochs += 1
+        
+    timesteps_per_episode.append(epochs)
+    penalties_per_episode.append(penalties)
+# 100%|█████████████████████████████████████████████████████████████| 10000/10000 [00:09<00:00, 1105.20it/s]
+```
+
+And plot `timesteps_per_episode` and `penalties_per_episode`:
+
+```
+import pandas as pd
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize = (12, 4))
+ax.set_title("Timesteps to complete ride")    
+pd.Series(timesteps_per_episode).plot(kind='line')
+plt.show()
+
+fig, ax = plt.subplots(figsize = (12, 4))
+ax.set_title("Penalties per ride")    
+pd.Series(penalties_per_episode).plot(kind='line')
+plt.show()
+```
+
+1_wr77nLXa396g4G9B7WH3Xg.png
+
+1_fOX9IH5wWRGOV4tX9EXWMQ.png
+
+Nice! These graphs look much much better than for the `RandomAgent`. Both metrics decrease with training, which means our agent is learning.
+
+We can actually see how the agent drives starting from the same `state` = 123 as we used for the `RandomAgent`.
+
+```
+# set initial state of the environment
+state = 123
+env.s = state
+
+epochs = 0
+penalties = 0
+reward = 0
+
+# store frames to latter plot them
+frames = []
+
+done = False
+
+while not done:
+    
+    action = agent.get_action(state)
+    
+    state, reward, done, info = env.step(action)
+
+    if reward == -10:
+        penalties += 1
+    
+    frames.append({
+        'frame': env.render(mode='ansi'),
+        'state': state,
+        'action': action,
+        'reward': reward
+        }
+    )
+
+    epochs += 1
+    
+print("Timesteps taken: {}".format(epochs))
+print("Penalties incurred: {}".format(penalties))
+# Timesteps taken: 11
+# Penalties incurred: 0
+```
+
+https://youtu.be/eqod3gNoVgU
+
+Nice ride by our Q-agent!
+
+If you want to compare hard numbers, you can evaluate the performance of the q-agent on, let’s say, 100 random episodes and compute the average number of timestamps and penalties incurred.
+
+A little bit about epsilon-greedy policies...
+
+When you evaluate the agent, it is still good practice to use a positive epsilon value, and not epsilon = 0.
+
+Why so? Isn’t our agent fully trained? Why do we need to keep this source of randomness when we choose the next action?
+
+The reason is to prevent overfitting.
+
+Even for such a small state, action space in Taxi-v3 (i.e., 500 x 6), it is likely that during training, our agent has not visited enough certain states. Hence, its performance in these states might not be 100% optimal, causing the agent to get “caught” in an almost infinite loop of suboptimal actions. If epsilon is a small positive number (e.g., 5%), we can help the agent escape these infinite loops of suboptimal actions.
+
+By using a small epsilon at evaluation, we are adopting a so-called epsilon-greedy strategy.
+
+Let’s evaluate our trained agent on `n_episodes` = 100 using `epsilon` = 0.05. Observe how the loop looks almost exactly as the train loop above, but without the call to `update_parameters()`:
+
+```
+import random
+from tqdm import tqdm
+
+# exploration vs exploitation prob
+epsilon = 0.05
+
+n_episodes = 100
+
+# For plotting metrics
+timesteps_per_episode = []
+penalties_per_episode = []
+
+
+for i in tqdm(range(0, n_episodes)):
+    
+    state = env.reset()      
+    
+    epochs, penalties, reward, = 0, 0, 0
+    done = False
+    
+    while not done:
+        
+        if random.uniform(0, 1) < epsilon:
+            # Explore action space
+            action = env.action_space.sample()
+        else:
+            # Exploit learned values
+            action = agent.get_action(state)
+        
+        next_state, reward, done, info = env.step(action)
+                      
+        if reward == -10:
+            penalties += 1
+
+        state = next_state
+        epochs += 1
+
+    timesteps_per_episode.append(epochs)
+    penalties_per_episode.append(penalties)
+# 100%|█████████████████████████████████████████████████████████████████| 100/100 [00:00<00:00, 2369.72it/s]
+```
+
+```
+print(f'Avg steps to complete ride: {np.array(timesteps_per_episode).mean()}')
+print(f'Avg penalties to complete ride: {np.array(penalties_per_episode).mean()}')
+# Avg steps to complete ride: 15.95
+# Avg penalties to complete ride: 0.09
+```
+
+These numbers look much much better than for the `RandomAgent`.
+
+We can say our agent has learned to drive the taxi!
+
+Q-learning gives us a method to compute optimal q-values. But, what about the hyper-parameters alpha, gamma, and epsilon?
+
+I chose them for you, rather arbitrarily. But in practice, you will need to tune them for your RL problems.
+
+Let’s explore their impact on learning to get a better intuition of what is going on.
+
+## 5. Hyper-parameter tuning
+ 
+https://github.com/Paulescu/hands-on-rl/blob/main/01_taxi/notebooks/03_q_agent_hyperparameters_analysis.ipynb
+
+Let’s train our q-agent using different values for alpha (learning rate) and gamma (discount factor). As for epsilon, we keep it at 10%.
+
+In order to keep the code clean, I encapsulated the q-agent definition inside `src/q_agent.py` and the training loop inside the `train()` function in `src/loops.py`.
+
+https://github.com/Paulescu/hands-on-rl/blob/50c61a385bbd511a6250407ffb1fcb59fbfb983f/01_taxi/src/q_agent.py
+
+https://github.com/Paulescu/hands-on-rl/blob/50c61a385bbd511a6250407ffb1fcb59fbfb983f/01_taxi/src/loops.py
+
+```
+# No need to copy paste the same QAgent
+# definition in every notebook, don't you think?
+from src.q_agent import QAgent
+
+# hyper-parameters
+# RL problems are full of these hyper-parameters.
+# For the moment, trust me when I set these values.
+# We will later play with these and see how they impact learning.
+alphas = [0.01, 0.1, 1]
+gammas = [0.1, 0.6, 0.9]
+```
+
+```
+import pandas as pd
+
+from src.loops import train
+
+# exploration vs exploitation prob
+# let's start with a constant probability of 10%.
+epsilon = 0.1
+n_episodes = 1000
+
+results = pd.DataFrame()
+for alpha in alphas:
+    for gamma in gammas:
+        
+        print(f'alpha: {alpha}, gamma: {gamma}')
+        agent = QAgent(env, alpha, gamma)
+        
+        _, timesteps, penalties = train(agent,
+                                        env,
+                                        n_episodes,
+                                        epsilon)
+        
+        # collect timesteps and penalties for this pair
+        # of hyper-parameters (alpha, gamma)
+        results_ = pd.DataFrame()
+        results_['timesteps'] = timesteps
+        results_['penalties'] = penalties
+        results_['alpha'] = alpha
+        results_['gamma'] = gamma
+        results = pd.concat([results, results_])
+
+# index -> episode
+results = results.reset_index().rename(
+    columns={'index': 'episode'})
+
+# add column with the 2 hyper-parameters
+results['hyperparameters'] = [
+    f'alpha={a}, gamma={g}'
+    for (a, g) in zip(results['alpha'], results['gamma'])
+]
+```
+
+Let us plot the timesteps per episode for each combination of hyper-parameters.
+
+```
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+fig = plt.gcf()
+fig.set_size_inches(12, 8)
+sns.lineplot('episode', 'timesteps',
+             hue='hyperparameters', data=results)
+```
+
+1_W5W7_XdTYUGnwaKh5infjA.png
+
+The graph looks artsy but a bit too noisy.
+
+Something you can observe, though, is that when `alpha` = 0.01 the learning is slower. `alpha` (learning rate) controls how much we update the q-values in each iteration. Too small of a value implies slower learning.
+
+Let’s discard `alpha` = 0.01 and do 10 runs of training for each combination of hyper-parameters. We average the timesteps for each episode number, from 1 to 1000, using these 10 runs.
+
+I created the function `train_many_runs()` in `src/loops.py` to keep the notebook code cleaner:
+
+```
+from src.loops import train_many_runs
+
+alphas = [0.1, 1]
+gammas = [0.1, 0.6, 0.9]
+
+epsilon = 0.1
+n_episodes = 1000
+n_runs = 10
+
+results = pd.DataFrame()
+for alpha in alphas:
+    for gamma in gammas:
+        
+        print(f'alpha: {alpha}, gamma: {gamma}')
+        agent = QAgent(env, alpha, gamma)
+        
+        timesteps, penalties = train_many_runs(agent,
+                                               env,
+                                               n_episodes,
+                                               epsilon,
+                                               n_runs)
+        
+        # collect timesteps and penalties for this pair of
+        # hyper-parameters (alpha, gamma)
+        results_ = pd.DataFrame()
+        results_['timesteps'] = timesteps
+        results_['penalties'] = penalties
+        results_['alpha'] = alpha
+        results_['gamma'] = gamma
+        results = pd.concat([results, results_])
+
+# index -> episode
+results = results.reset_index().rename(
+    columns={'index': 'episode'})
+
+results['hyperparameters'] = [
+    f'alpha={a}, gamma={g}'
+    for (a, g) in zip(results['alpha'], results['gamma'])]
+```
+
+1_qoEuloRv2VNAKtq7ux_XVQ.png
+
+It looks like `alpha` = 1.0 is the value that works best, while gamma seems to have less of an impact.
+
+Congratulations! You have tuned your first learning rate in this course.
+
+Tuning hyper-parameters can be time-consuming and tedious. There are excellent libraries to automate the manual process we just followed, like Optuna, but this is something we will play with later in the course. 
+
+https://optuna.org/
+
+For the time being, enjoy the speed-up in training we have just found.
+
+Wait, what happens with this epsilon = 10% that I told you to trust me on?
+
+Is the current 10% value the best?
+
+Let’s check it ourselves.
+
+We take the best alpha and gamma we found, i.e.,
+
+- `alpha` = 1.0
+
+- `gamma` = 0.9
+    + we could have taken 0.1 or 0.6 too
+    
+And train with different epsilons = [0.01, 0.1, 0.9]
+
+```
+# best hyper-parameters so far
+alpha = 1.0
+gamma = 0.9
+
+epsilons = [0.01, 0.10, 0.9]
+n_runs = 10
+n_episodes = 200
+
+results = pd.DataFrame()
+for epsilon in epsilons:
+        
+    print(f'epsilon: {epsilon}')
+    agent = QAgent(env, alpha, gamma)
+
+    timesteps, penalties = train_many_runs(agent,
+                                           env,
+                                           n_episodes,
+                                           epsilon,
+                                           n_runs)
+
+    # collect timesteps and penalties for this pair of
+    # hyper-parameters (alpha, gamma)
+    results_ = pd.DataFrame()
+    results_['timesteps'] = timesteps
+    results_['penalties'] = penalties
+    results_['epsilon'] = epsilon
+    results = pd.concat([results, results_])
+
+# index -> episode
+results = results.reset_index().rename(columns={'index': 'episode'})
+```
+
+And plot the resulting timesteps and penalties curves:
+
+```
+fig = plt.gcf()
+fig.set_size_inches(12, 8)
+sns.lineplot('episode', 'timesteps', hue='epsilon', data=results)
+plt.show()
+
+fig = plt.gcf()
+fig.set_size_inches(12, 8)
+sns.lineplot('episode', 'penalties', hue='epsilon', data=results)
+```
+
+1_gpEZua6ILiJ2QR4wClD3Dg.png
+
+As you can see, both `epsilon` = 0.01 and `epsilon` = 0.1 seem to work equally well, as they strike the right balance between exploration and exploitation.
+
+On the other side, `epsilon` = 0.9 is too large of a value, causing “too much” randomness during training and preventing our q-matrix from converging to the optimal one. Observe how the performance plateaus at around 250 timesteps per episode.
+
+In general, the best strategy to choose the epsilon hyper-parameter is progressive epsilon decay. That is, at the beginning of training, when the agent is very uncertain about its q-value estimation, it is best to visit as many states as possible, and for that, a large epsilon is great (e.g., 50%)
+
+As training progresses and the agent refines its q-value estimation, it is no longer optimal to explore that much. Instead, by decreasing epsilon, the agent can learn to perfect and fine-tune the q-values to make them converge faster to the optimal ones. Too large of epsilon can cause convergence issues, as we see for epsilon = 0.9.
+
+We will be tunning epsilons along the course, so I will not insist too much for the moment. Again, enjoy what we have done today. It is pretty remarkable.
+
+## Recap
+
+Congratulations on (probably) solving your first Reinforcement Learning problem.
+
+These are the key learnings I want you to sleep on:
+
+- The difficulty of a Reinforcement Learning problem is directly related to the number of possible actions and states. Taxi-v3 is a tabular environment (i.e. finite number of states and actions), so it is an easy one.
+
+- Q-learning is a learning algorithm that works excellent for tabular environments.
+
+- No matter what RL algorithm you use, there are hyper-parameters you need to tune to make sure your agent learns the optimal strategy.
+
+- Tunning hyper-parameters is a time-consuming process but necessary to ensure our agents learn. We will get better at this as the course progresses.
+
+## Homework
+
+https://github.com/Paulescu/hands-on-rl/blob/main/01_taxi/notebooks/04_homework.ipynb
+
+This is what I want you to do:
+
+1. Git clone the repo to your local machine.
+
+https://github.com/Paulescu/hands-on-rl
+
+2. Setup the environment for this `lesson 01_taxi`.
+
+https://github.com/Paulescu/hands-on-rl/tree/main/01_taxi
+
+3. Open `01_taxi/otebooks/04_homework.ipynb` and try completing the 2 challenges.
+
+https://github.com/Paulescu/hands-on-rl/blob/main/01_taxi/notebooks/04_homework.ipynb
+
+I call them challenges (not exercises) because they are not easy. I want you to try them, get your hands dirty, and (maybe) succeed.
+
+In the first challenge, I dare you to update the train()function src/loops.py to accept an episode-dependent epsilon.
+
+In the second challenge, I want you to upgrade your Python skills and implement paralleling processing to speed up hyper-parameter experimentation.
+
+As usual, if you get stuck and you need feedback, drop me a line at plabartabajo@gmail.com.
+
+I will be more than happy to help you.
+
+If you want to get updates on the course, subscribe to the 'datamachines' newsletter.
+
+https://datamachines.xyz/subscribe/
+
+Original. Reposted with permission.
+
+http://datamachines.xyz/2021/12/06/hands-on-reinforcement-learning-course-part-2/
+
+## More On This Topic
+
+Hands-on Reinforcement Learning Course Part 3: SARSA
+
+https://www.kdnuggets.com/2022/01/handson-reinforcement-learning-course-part-3-sarsa.html
+
+Facebook Launches One of the Toughest Reinforcement Learning…
+
+https://www.kdnuggets.com/2021/06/facebook-launches-toughest-reinforcement-learning-challenges.html
+
+Hands-On Reinforcement Learning Course, Part 1
+
+https://www.kdnuggets.com/2021/12/hands-on-reinforcement-learning-course-part-1.html
+
+Top Stories, Sep 30 - Oct 6: The Last SQL Guide for Data Analysis…
+
+https://www.kdnuggets.com/2019/10/top-news-week-0930-1006.html
+
+Getting Started with Reinforcement Learning
+
+https://www.kdnuggets.com/2021/04/getting-started-reinforcement-learning.html
+
+KDnuggets™ News 19:n37, Oct 2: The Future of Analytics & Data…
+
+https://www.kdnuggets.com/2019/n37.html

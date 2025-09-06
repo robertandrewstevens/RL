@@ -1,0 +1,9 @@
+---
+title: "Untitled"
+author: "Robert A. Stevens"
+date: "`r Sys.Date()`"
+output: github_document
+---
+
+https://www.kdnuggets.com/2022/01/handson-reinforcement-learning-course-part-3-sarsa.html 
+
